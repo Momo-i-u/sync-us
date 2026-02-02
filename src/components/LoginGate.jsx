@@ -6,29 +6,28 @@ export default function LoginGate({ onAuth }) {
   const [error, setError] = useState(false);
 
   const handleLogin = (e) => {
-    // 🛑 CRITICAL: Prevent the form from refreshing the page
+    // 🛑 Prevent page refresh
     e.preventDefault(); 
     
-    console.log("Attempting login...");
-
-    // 1. Get passwords from Environment Variables
+    // 1. Get passwords securely from Environment Variables
+    // (These are loaded from your local .env file during build)
     const envPassChunxiao = process.env.REACT_APP_PASS_CHUNXIAO;
     const envPassMax = process.env.REACT_APP_PASS_MAX;
 
-    // 2. Auth Logic with Hardcoded Fallbacks
-    // (We keep hardcoded strings here as a backup in case .env fails on GitHub Pages)
-    if (password === envPassChunxiao || password === 'cxz_022000') {
+    // 2. Auth Logic (Updated Mapping)
+    // Chunxiao uses Max779911
+    if (password === envPassChunxiao) {
       console.log("✅ Login Success: Chunxiao");
-      onAuth('PARTNER');
+      onAuth('PARTNER'); // Chunxiao's Role
     } 
-    else if (password === envPassMax || password === 'Max779911') {
+    // Max uses cxz_022000
+    else if (password === envPassMax) {
       console.log("✅ Login Success: Max");
-      onAuth('PRIMARY');
+      onAuth('PRIMARY'); // Max's Role
     } 
     else {
-      console.error("❌ Login Failed: Incorrect Password");
+      console.error("❌ Login Failed");
       setError(true);
-      // Reset error animation after 500ms
       setTimeout(() => setError(false), 500);
     }
   };
@@ -38,7 +37,6 @@ export default function LoginGate({ onAuth }) {
       <div className="max-w-md w-full animate-in fade-in zoom-in duration-500">
         <div className="bg-white p-8 rounded-[2.5rem] shadow-2xl border border-white">
           
-          {/* Header Section */}
           <div className="text-center mb-10 space-y-4">
             <div className="w-16 h-16 bg-slate-900 rounded-2xl flex items-center justify-center mx-auto shadow-lg rotate-3 hover:rotate-6 transition-transform">
               <Lock className="text-white" size={28} />
@@ -49,10 +47,13 @@ export default function LoginGate({ onAuth }) {
             </div>
           </div>
 
-          {/* Login Form */}
           <form onSubmit={handleLogin} className="space-y-4 relative">
             <div className="relative group">
+              {/* ✅ Includes id, name, autoComplete to fix warnings */}
               <input 
+                id="access-code"
+                name="password"
+                autoComplete="current-password"
                 type="password" 
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
