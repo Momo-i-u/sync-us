@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Send, Sparkles, Quote, Link as LinkIcon, Trash2, Loader2, Globe } from 'lucide-react';
+import { Send, Sparkles, Quote, Link as LinkIcon, Trash2, Loader2, Globe, Activity } from 'lucide-react';
 
 export default function Stream({ items, onPost, onDelete, myId, userRole, loading }) {
   const [input, setInput] = useState("");
@@ -11,7 +11,6 @@ export default function Stream({ items, onPost, onDelete, myId, userRole, loadin
     setInput("");
   };
 
-  // Logic to determine the partner's name based on current role
   const partnerName = userRole === 'PRIMARY' ? 'Chunxiao' : 'Max';
 
   return (
@@ -42,73 +41,66 @@ export default function Stream({ items, onPost, onDelete, myId, userRole, loadin
             <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-300">Archive Empty / Awaiting Sync</p>
           </div>
         ) : (
-          items.map((item) => (
-            <div 
-              key={item.id} 
-              className={`group p-8 rounded-[3rem] bg-white border transition-all duration-500 hover:shadow-2xl hover:-translate-y-1 ${item.user_id === myId ? 'border-slate-50' : 'border-pink-50'}`}
-            >
-              {/* Header: Identity Label */}
-              <div className="flex justify-between items-center mb-6 text-[9px] font-black uppercase tracking-widest text-slate-300">
-                <span className="flex items-center gap-2">
-                  <div className={`w-1.5 h-1.5 rounded-full ${item.user_id === myId ? 'bg-slate-300' : 'bg-pink-400 animate-pulse'}`} />
-                  {item.user_id === myId ? 'Your Entry' : `${partnerName}'s Sync`}
-                </span>
-                <Sparkles size={14} className={item.preview_data ? "text-blue-400" : "text-slate-100"} />
-              </div>
+          items.map((item) => {
+            // New logic: Detect if this is a Topology/System update
+            const isSystem = item.type === 'SYSTEM';
 
-              {/* Content: Link Preview or Text */}
-              {item.preview_data ? (
-                <a 
-                  href={item.preview_data.url} 
-                  target="_blank" 
-                  rel="noreferrer" 
-                  className="flex flex-col md:flex-row gap-8 group/link"
-                >
-                  {item.preview_data.image && (
-                    <div className="w-full md:w-40 h-40 rounded-[2.5rem] overflow-hidden flex-shrink-0 shadow-lg border-4 border-white">
-                      <img 
-                        src={item.preview_data.image} 
-                        alt="Preview" 
-                        className="w-full h-full object-cover group-hover/link:scale-110 transition-transform duration-700" 
-                        onError={(e) => e.target.style.display = 'none'}
-                      />
-                    </div>
-                  )}
-                  <div className="flex-1 space-y-3 py-2">
-                    <h4 className="text-base font-black text-slate-800 group-hover/link:text-blue-600 transition-colors line-clamp-2 leading-tight">
-                      {item.preview_data.title || "Untitled Resource"}
-                    </h4>
-                    <p className="text-xs text-slate-400 leading-relaxed line-clamp-3 italic">
-                      {item.preview_data.description || "No description available for this encrypted node."}
-                    </p>
-                    <div className="pt-3 text-[10px] font-black text-blue-400 uppercase tracking-tighter flex items-center gap-2">
-                      <Globe size={12} /> {new URL(item.preview_data.url).hostname}
-                    </div>
-                  </div>
-                </a>
-              ) : (
-                <div className="relative py-4 px-2">
-                  <Quote size={40} className="absolute -top-2 -left-6 text-slate-50 z-0" />
-                  <p className="text-base text-slate-700 italic leading-relaxed relative z-10 tracking-tight font-medium">
-                    {item.content}
-                  </p>
+            return (
+              <div 
+                key={item.id} 
+                className={`group p-8 rounded-[3rem] bg-white border transition-all duration-500 hover:shadow-2xl hover:-translate-y-1 ${isSystem ? 'border-amber-100 bg-amber-50/10' : item.user_id === myId ? 'border-slate-50' : 'border-pink-50'}`}
+              >
+                {/* Header */}
+                <div className="flex justify-between items-center mb-6 text-[9px] font-black uppercase tracking-widest text-slate-300">
+                  <span className="flex items-center gap-2">
+                    <div className={`w-1.5 h-1.5 rounded-full ${isSystem ? 'bg-amber-400' : item.user_id === myId ? 'bg-slate-300' : 'bg-pink-400 animate-pulse'}`} />
+                    {isSystem ? 'Topology Update' : item.user_id === myId ? 'Your Entry' : `${partnerName}'s Sync`}
+                  </span>
+                  {isSystem ? <Activity size={14} className="text-amber-400" /> : <Sparkles size={14} className={item.preview_data ? "text-blue-400" : "text-slate-100"} />}
                 </div>
-              )}
 
-              {/* Footer: Metadata & Actions */}
-              <div className="mt-10 pt-6 border-t border-slate-50 flex justify-between items-center">
-                <span className="text-[8px] font-bold text-slate-300 uppercase tracking-[0.2em]">
-                  {new Date(item.created_at).toLocaleDateString()} — {new Date(item.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                </span>
-                <button 
-                  onClick={() => onDelete(item.id)} 
-                  className="p-2 text-slate-100 hover:text-red-400 hover:bg-red-50 rounded-xl transition-all"
-                >
-                  <Trash2 size={14} />
-                </button>
+                {/* Content: System Update, Link, or Text */}
+                {isSystem ? (
+                  <div className="py-2 flex items-center gap-4">
+                    <div className="p-3 bg-amber-100 rounded-2xl text-amber-600">
+                      <Activity size={20} />
+                    </div>
+                    <p className="text-sm font-bold text-slate-600 tracking-tight">
+                      {item.content}
+                    </p>
+                  </div>
+                ) : item.preview_data ? (
+                  <a href={item.preview_data.url} target="_blank" rel="noreferrer" className="flex flex-col md:flex-row gap-8 group/link">
+                    {item.preview_data.image && (
+                      <div className="w-full md:w-40 h-40 rounded-[2.5rem] overflow-hidden flex-shrink-0 shadow-lg border-4 border-white">
+                        <img src={item.preview_data.image} alt="Preview" className="w-full h-full object-cover group-hover/link:scale-110 transition-transform duration-700" onError={(e) => e.target.style.display = 'none'} />
+                      </div>
+                    )}
+                    <div className="flex-1 space-y-3 py-2">
+                      <h4 className="text-base font-black text-slate-800 group-hover/link:text-blue-600 transition-colors line-clamp-2 leading-tight">{item.preview_data.title || "Untitled Resource"}</h4>
+                      <p className="text-xs text-slate-400 leading-relaxed line-clamp-3 italic">{item.preview_data.description || "No description available."}</p>
+                      <div className="pt-3 text-[10px] font-black text-blue-400 uppercase tracking-tighter flex items-center gap-2"><Globe size={12} /> {new URL(item.preview_data.url).hostname}</div>
+                    </div>
+                  </a>
+                ) : (
+                  <div className="relative py-4 px-2">
+                    <Quote size={40} className="absolute -top-2 -left-6 text-slate-50 z-0" />
+                    <p className="text-base text-slate-700 italic leading-relaxed relative z-10 tracking-tight font-medium">“{item.content}”</p>
+                  </div>
+                )}
+
+                {/* Footer */}
+                <div className="mt-10 pt-6 border-t border-slate-50 flex justify-between items-center">
+                  <span className="text-[8px] font-bold text-slate-300 uppercase tracking-[0.2em]">
+                    {new Date(item.created_at).toLocaleDateString()} — {new Date(item.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  </span>
+                  <button onClick={() => onDelete(item.id)} className="p-2 text-slate-100 hover:text-red-400 hover:bg-red-50 rounded-xl transition-all">
+                    <Trash2 size={14} />
+                  </button>
+                </div>
               </div>
-            </div>
-          ))
+            );
+          })
         )}
       </div>
     </div>

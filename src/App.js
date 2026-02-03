@@ -19,32 +19,22 @@ export default function App() {
   const [view, setView] = useState('DASHBOARD');
   const [activeChapterId, setActiveChapterId] = useState(null);
 
-  // Initialize the Kernel Hook
   const lab = useSyncUs(isAuthenticated, userRole);
 
-  // --- Handlers ---
-
-  // ✅ NEW: Logout Handler
   const handleLogout = () => {
-    // 1. Clear Local Storage
     localStorage.removeItem('lab_access');
     localStorage.removeItem('user_role');
-    
-    // 2. Reset State
     setIsAuthenticated(false);
     setUserRole(null);
-    
-    // 3. Optional: Reload to clear any memory hooks
     window.location.reload(); 
   };
 
-  const handlePostStream = async (text) => {
-    // 1. Check for URLs
+  const handlePostStream = async (text, forcedType = null) => {
     const urlRegex = /(https?:\/\/[^\s]+)/g;
     const foundUrl = text.match(urlRegex);
     let preview = null;
 
-    if (foundUrl) {
+    if (foundUrl && !forcedType) {
       try {
         const res = await fetch(`https://api.linkpreview.net/?key=${LINK_PREVIEW_KEY}&q=${foundUrl[0]}`);
         if (res.ok) preview = await res.json();
@@ -55,7 +45,7 @@ export default function App() {
     await supabase.from('stream').insert([{
       content: encryptedContent, 
       user_id: lab.MY_ID,
-      type: foundUrl ? 'link' : 'thought',
+      type: forcedType || (foundUrl ? 'link' : 'thought'),
       preview_data: preview
     }]);
 
@@ -64,11 +54,31 @@ export default function App() {
 
   const handleCreateProject = async (title) => {
     await supabase.from('chapters').insert([{ title, progress: 0, milestones: [], consent_status: 'PENDING' }]);
+    handlePostStream(`New project initialized: ${title}`, 'SYSTEM');
     lab.fetchData();
   };
 
+  // ✅ SILENCED VERSION: Only notifies on status changes, not progress/milestones
   const handleUpdateChapter = async (id, updates) => {
     await supabase.from('chapters').update(updates).eq('id', id);
+    
+    const chapter = lab.chapters.find(c => c.id === id);
+    
+    // Only post to stream if the status is Confirmed or Alternative
+    if (updates.consent_status) {
+      handlePostStream(`${chapter?.title} status set to: ${updates.consent_status}`, 'SYSTEM');
+    }
+
+    lab.fetchData();
+  };
+
+  const handleDeleteChapter = async (id) => {
+    const chapter = lab.chapters.find(c => c.id === id);
+    if (!window.confirm(`Terminate protocol: ${chapter?.title}? This action is irreversible.`)) return;
+
+    await supabase.from('chapters').delete().eq('id', id);
+    handlePostStream(`Protocol terminated: ${chapter?.title}`, 'SYSTEM');
+    setActiveChapterId(null); 
     lab.fetchData();
   };
 
@@ -77,7 +87,6 @@ export default function App() {
     lab.fetchData();
   };
 
-  // --- Auth Gate ---
   if (!isAuthenticated) return (
     <LoginGate onAuth={(role) => {
       localStorage.setItem('lab_access', 'granted');
@@ -87,12 +96,9 @@ export default function App() {
     }} />
   );
 
-  // --- Main Render ---
   return (
     <div className="min-h-screen bg-[#f8fafc] text-slate-600 font-sans">
       <div className="max-w-5xl mx-auto p-6 md:p-10">
-        
-        {/* ✅ UPDATE: Pass the logout handler to Header */}
         <Header 
           userRole={userRole}
           myStatus={lab.myStatus}
@@ -115,11 +121,11 @@ export default function App() {
         {view === 'STREAM' && (
           <Stream 
             items={lab.streamItems} 
-            onPost={handlePostStream}
-            onDelete={handleDeleteStream}
+            onPost={handlePostStream} 
+            onDelete={handleDeleteStream} 
             myId={lab.MY_ID} 
             userRole={userRole} 
-            loading={lab.loading}
+            loading={lab.loading} 
           />
         )}
 
@@ -131,6 +137,7 @@ export default function App() {
           chapter={lab.chapters.find(c => c.id === activeChapterId)}
           onClose={() => setActiveChapterId(null)}
           onUpdate={handleUpdateChapter}
+          onDelete={handleDeleteChapter}
         />
       )}
     </div>
