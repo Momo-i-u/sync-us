@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { supabase } from './lib/supabase';
 import { encrypt } from './lib/crypto';
 import { useSyncUs } from './hooks/useSyncUs'; 
@@ -10,6 +10,7 @@ import ProtocolSidebar from './components/ProtocolSidebar';
 import Dashboard from './views/Dashboard';
 import Stream from './views/Stream';
 import Vault from './views/Vault';
+import CineRegistry from './views/CineRegistry';
 
 const LINK_PREVIEW_KEY = process.env.REACT_APP_LINKPREVIEW_KEY;
 
@@ -18,9 +19,21 @@ export default function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(localStorage.getItem('lab_access') === 'granted');
   const [view, setView] = useState('DASHBOARD');
   const [activeChapterId, setActiveChapterId] = useState(null);
+  const [mediaItems, setMediaItems] = useState([]);
 
   const lab = useSyncUs(isAuthenticated, userRole);
 
+  // --- Data Fetching ---
+  const fetchMedia = async () => {
+    const { data } = await supabase.from('shared_media').select('*').order('created_at', { ascending: false });
+    setMediaItems(data || []);
+  };
+
+  useEffect(() => {
+    if (isAuthenticated) fetchMedia();
+  }, [isAuthenticated]);
+
+  // --- Auth Handlers ---
   const handleLogout = () => {
     localStorage.removeItem('lab_access');
     localStorage.removeItem('user_role');
@@ -29,6 +42,7 @@ export default function App() {
     window.location.reload(); 
   };
 
+  // --- Stream Handlers ---
   const handlePostStream = async (text, forcedType = null) => {
     const urlRegex = /(https?:\/\/[^\s]+)/g;
     const foundUrl = text.match(urlRegex);
@@ -52,39 +66,51 @@ export default function App() {
     lab.fetchData(); 
   };
 
+  const handleDeleteStream = async (id) => {
+    await supabase.from('stream').delete().eq('id', id);
+    lab.fetchData();
+  };
+
+  // --- Protocol Handlers ---
   const handleCreateProject = async (title) => {
     await supabase.from('chapters').insert([{ title, progress: 0, milestones: [], consent_status: 'PENDING' }]);
     handlePostStream(`New project initialized: ${title}`, 'SYSTEM');
     lab.fetchData();
   };
 
-  // ✅ SILENCED VERSION: Only notifies on status changes, not progress/milestones
   const handleUpdateChapter = async (id, updates) => {
     await supabase.from('chapters').update(updates).eq('id', id);
-    
     const chapter = lab.chapters.find(c => c.id === id);
-    
-    // Only post to stream if the status is Confirmed or Alternative
     if (updates.consent_status) {
       handlePostStream(`${chapter?.title} status set to: ${updates.consent_status}`, 'SYSTEM');
     }
-
     lab.fetchData();
   };
 
   const handleDeleteChapter = async (id) => {
     const chapter = lab.chapters.find(c => c.id === id);
-    if (!window.confirm(`Terminate protocol: ${chapter?.title}? This action is irreversible.`)) return;
-
+    if (!window.confirm(`Terminate protocol: ${chapter?.title}?`)) return;
     await supabase.from('chapters').delete().eq('id', id);
     handlePostStream(`Protocol terminated: ${chapter?.title}`, 'SYSTEM');
     setActiveChapterId(null); 
     lab.fetchData();
   };
 
-  const handleDeleteStream = async (id) => {
-    await supabase.from('stream').delete().eq('id', id);
-    lab.fetchData();
+  // --- Media Handlers ---
+  const handleAddMedia = async (media) => {
+    await supabase.from('shared_media').insert([media]);
+    handlePostStream(`New resource registered to Cinema: ${media.title}`, 'SYSTEM');
+    fetchMedia();
+  };
+
+  const handleUpdateMedia = async (id, updates) => {
+    await supabase.from('shared_media').update(updates).eq('id', id);
+    fetchMedia();
+  };
+
+  const handleDeleteMedia = async (id) => {
+    await supabase.from('shared_media').delete().eq('id', id);
+    fetchMedia();
   };
 
   if (!isAuthenticated) return (
@@ -107,6 +133,7 @@ export default function App() {
           currentView={view}
           setView={setView}
           onLogout={handleLogout} 
+          mediaCount={mediaItems.length}
         />
 
         {view === 'DASHBOARD' && (
@@ -126,6 +153,15 @@ export default function App() {
             myId={lab.MY_ID} 
             userRole={userRole} 
             loading={lab.loading} 
+          />
+        )}
+
+        {view === 'CINEMA' && (
+          <CineRegistry 
+            items={mediaItems} 
+            onAdd={handleAddMedia} 
+            onUpdate={handleUpdateMedia} 
+            onDelete={handleDeleteMedia} 
           />
         )}
 
