@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from './lib/supabase';
 import { encrypt } from './lib/crypto';
 import { useSyncUs } from './hooks/useSyncUs'; 
+import logo from './logo.png'; 
 
 // Modular Components & Views
 import LoginGate from './components/LoginGate';
@@ -23,8 +24,8 @@ export default function App() {
 
   const lab = useSyncUs(isAuthenticated, userRole);
 
-  // --- Data Fetching ---
   const fetchMedia = async () => {
+    // 确保按时间倒序排列，这样 mediaItems[0] 就是最新的
     const { data } = await supabase.from('shared_media').select('*').order('created_at', { ascending: false });
     setMediaItems(data || []);
   };
@@ -33,7 +34,6 @@ export default function App() {
     if (isAuthenticated) fetchMedia();
   }, [isAuthenticated]);
 
-  // --- Auth Handlers ---
   const handleLogout = () => {
     localStorage.removeItem('lab_access');
     localStorage.removeItem('user_role');
@@ -42,7 +42,6 @@ export default function App() {
     window.location.reload(); 
   };
 
-  // --- Stream Handlers ---
   const handlePostStream = async (text, forcedType = null) => {
     const urlRegex = /(https?:\/\/[^\s]+)/g;
     const foundUrl = text.match(urlRegex);
@@ -71,7 +70,6 @@ export default function App() {
     lab.fetchData();
   };
 
-  // --- Protocol Handlers ---
   const handleCreateProject = async (title) => {
     await supabase.from('chapters').insert([{ title, progress: 0, milestones: [], consent_status: 'PENDING' }]);
     handlePostStream(`New project initialized: ${title}`, 'SYSTEM');
@@ -96,9 +94,9 @@ export default function App() {
     lab.fetchData();
   };
 
-  // --- Media Handlers ---
   const handleAddMedia = async (media) => {
-    await supabase.from('shared_media').insert([media]);
+    // 确保添加时带上 user_id，否则红点逻辑无法判断是谁发的
+    await supabase.from('shared_media').insert([{ ...media, user_id: lab.MY_ID }]);
     handlePostStream(`New resource registered to Cinema: ${media.title}`, 'SYSTEM');
     fetchMedia();
   };
@@ -123,9 +121,10 @@ export default function App() {
   );
 
   return (
-    <div className="min-h-screen bg-[#f8fafc] text-slate-600 font-sans">
-      <div className="max-w-5xl mx-auto p-6 md:p-10">
+    <div className="min-h-screen bg-[#FAF9F6] text-[#3C3835] font-sans">
+      <div className="max-w-5xl mx-auto p-6 md:p-10 animate-in fade-in duration-1000">
         <Header 
+          logo={logo} 
           userRole={userRole}
           myStatus={lab.myStatus}
           partnerStatus={lab.partnerStatus}
@@ -133,7 +132,8 @@ export default function App() {
           currentView={view}
           setView={setView}
           onLogout={handleLogout} 
-          mediaCount={mediaItems.length}
+          latestMedia={mediaItems[0]} 
+          myId={lab.MY_ID}
         />
 
         {view === 'DASHBOARD' && (
@@ -141,7 +141,8 @@ export default function App() {
             chapters={lab.chapters} 
             loading={lab.loading} 
             onCreate={handleCreateProject} 
-            onOpen={setActiveChapterId} 
+            onOpen={setActiveChapterId}
+            onUpdate={handleUpdateChapter} 
           />
         )}
 

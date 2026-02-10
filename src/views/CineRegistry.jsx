@@ -40,6 +40,13 @@ export default function CineRegistry({ items, onAdd, onDelete, onUpdate }) {
     setQuery("");
   };
 
+  // ✅ SORTING LOGIC: Move 'WATCHED' items to the end
+  const sortedItems = [...items].sort((a, b) => {
+    if (a.status === 'WATCHED' && b.status !== 'WATCHED') return 1;
+    if (a.status !== 'WATCHED' && b.status === 'WATCHED') return -1;
+    return 0;
+  });
+
   return (
     <div className="max-w-4xl mx-auto space-y-12 animate-in fade-in duration-700">
       
@@ -94,13 +101,13 @@ export default function CineRegistry({ items, onAdd, onDelete, onUpdate }) {
       </div>
 
       {/* --- Visual Gallery --- */}
-      {items.length === 0 ? (
+      {sortedItems.length === 0 ? (
         <div className="text-center py-20 border-2 border-dashed border-slate-100 rounded-[3rem]">
           <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-300">Cinema Archive Empty</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {items.map((item) => (
+          {sortedItems.map((item) => (
             <div 
               key={item.id} 
               className={`group bg-white p-6 rounded-[3rem] border transition-all flex items-center gap-6 shadow-sm hover:shadow-xl ${item.status === 'WATCHED' ? 'opacity-50 grayscale-[0.6]' : 'border-slate-50 hover:border-amber-100'}`}

@@ -1,75 +1,30 @@
-<<<<<<< HEAD
-# sync-us
-Happy Valentine's Day
-=======
-# Getting Started with Create React App
+sync-us
+Happy Valentine's Day! 🎁
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+So... it’s finally here!! Max, you really thought the gift was just a drawing for you hehe... if I look confident when I gift it to you, I might finally have beat my anxiety.
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+what is this?
 
-## Available Scripts
+It’s our own little space. All the functions and interaction design are considering OUR habits.
 
-In the project directory, you can run:
+the functions!!
 
-### `npm start`
+The Orbit Status: The Circle idea is from my Apple Watch hehe. This part was so difficult for me, I almost gave up honestly... but my AI helper guided me through it. It lets us show if we are Steady (normal), Alone (preference being alone), or Sync (preference being together/texting!!).
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+Protocols (The Dashboard): Here is where we track our shared projects. It has a progress bar we can manually move, a task list, and you can go to our Google Calendar just by clicking. I added a Finished list so projects move there when we are done, so that the main page stays clean and not messy.
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+Cinema Watchlist: Our movie night hub! We can search the movie, see the posters, and it links to IMDb. When we finish, we click "watched" and it moves to the bottom. You will only see a tiny red dot if I add a movie. If you add one yourself, no dot! Once you look at the Cinema page, it goes away.
 
-### `npm test`
+The Stream & Vault: A simple place for us to drop links and quick notes. For the Vault, I linked it with our shared Google Cloud photos.
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+design & tech
 
-### `npm run build`
+The Logo: It’s an "S" (meaning sync) formed by two people's Google Calendar sidebars. The heartbeat is yellow because Max—-you label all our time together in yellow in your calendar!! And cute cats cuddling together... I made it gradient to make it look techy, but I actually hand-painted it on Procreate with an airbrush.
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+The Look: I wanted it to feel "Warm." No cold grays or sharp black boxes! I used creamy whites and soft mocha colors so it feels like a cozy home (Thanks teacher gemini for my color search).
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+The Tech stuff: I used React and Supabase. For the movies, I used the OMDB API and Linkpreview for the stream. Everything in the stream is end-to-end encrypted because I'm a bit anxious about privacy! I used GitHub to deploy and .env to protect the passwords so I don't have to pay for private hosting hehe. I'm trying my best to keep it 0 dollar.
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
-
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
-
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
->>>>>>> 868182d (Initialize project using Create React App)
+I felt like such a beginner making this, but I'm so happy I finished all the functions I wanted. I hope it makes our life a bit more synchronized!
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+License > This project is licensed under the MIT License.
