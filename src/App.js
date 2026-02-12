@@ -25,7 +25,6 @@ export default function App() {
   const lab = useSyncUs(isAuthenticated, userRole);
 
   const fetchMedia = async () => {
-    // 确保按时间倒序排列，这样 mediaItems[0] 就是最新的
     const { data } = await supabase.from('shared_media').select('*').order('created_at', { ascending: false });
     setMediaItems(data || []);
   };
@@ -94,9 +93,16 @@ export default function App() {
     lab.fetchData();
   };
 
+  // --- MINIMAL CHANGE HERE ---
   const handleAddMedia = async (media) => {
-    // 确保添加时带上 user_id，否则红点逻辑无法判断是谁发的
-    await supabase.from('shared_media').insert([{ ...media, user_id: lab.MY_ID }]);
+    // Removed user_id because the column does not exist in shared_media table
+    const { error } = await supabase.from('shared_media').insert([media]);
+    
+    if (error) {
+      console.error("Supabase Error:", error.message);
+      return;
+    }
+
     handlePostStream(`New resource registered to Cinema: ${media.title}`, 'SYSTEM');
     fetchMedia();
   };
